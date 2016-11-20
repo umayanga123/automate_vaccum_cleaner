@@ -12,6 +12,7 @@ NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 
 AF_DCMotor motor1(1, MOTOR12_1KHZ); 
 AF_DCMotor motor2(3, MOTOR12_1KHZ);
+AF_DCMotor motor3(2, MOTOR12_1KHZ);
 
 Servo myservo;   
 
@@ -39,9 +40,13 @@ void setup() {
   delay(100);
   DisObstacle = digitalRead(DisObstaclePin);
   delay(100);
+  //
+  motor3.setSpeed(60);
 }
 
 void loop() {
+  
+ Serial.println("Begin loop"); 
  int distanceR = 0;
  int distanceL =  0;
  
@@ -74,6 +79,7 @@ void loop() {
  }else
  {
   moveForward();
+  motor3.run(FORWARD);
   Serial.print("Forword");
  }
  distance = readPing();
@@ -116,6 +122,7 @@ int readPing() {
 void moveStop() {
   motor1.run(RELEASE); 
   motor2.run(RELEASE);
+  motor3.run(RELEASE);
   delay(100);
   } 
   
