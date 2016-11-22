@@ -20,7 +20,7 @@ boolean goesForward=false;
 int distance = 100;
 int speedSet = 0;
 
-int DisObstaclePin = 0; // This is our input pin
+int DisObstaclePin = 2; // This is our input pin
 int DisObstacle = HIGH; // HIGH MEANS NO OBSTACLE
 
 

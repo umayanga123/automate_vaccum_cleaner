@@ -53,25 +53,25 @@ void setup()
   myservo.write(115);
   delay(1000);
 
-  /*distance = readPing();
+  distance = readPing();
   delay(100);
   distance = readPing();
   delay(100);
   DisObstacle = digitalRead(DisObstaclePin);
-  delay(100);*/
+  delay(100);
   
   
   irrecv.enableIRIn(); // Start the receiver
-
+  irrecv.blink13(true);
 }
 
 
 void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 {
   
-  motor3.run(FORWARD);
+  //motor3.run(FORWARD);
   Serial.println("Begin loop");
-  delay(5000);
+  delay(500);
   if (irrecv.decode(&results)) // have we received an IR signal?
 
   {

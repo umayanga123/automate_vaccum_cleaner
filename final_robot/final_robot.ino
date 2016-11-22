@@ -17,21 +17,22 @@ NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 
 AF_DCMotor motor1(1, MOTOR12_1KHZ);
 AF_DCMotor motor2(3, MOTOR12_1KHZ);
+
 AF_DCMotor motor3(2, MOTOR12_1KHZ);
 
 Servo myservo;
 
 boolean goesForward = false;
-boolean fanrun = false;
 int distance = 100;
 int speedSet = 0;
 
-int DisObstaclePin = 0; // This is our input pin
+int DisObstaclePin = 2; // This is our input pin
 int DisObstacle = HIGH; // HIGH MEANS NO OBSTACLE
 
 
-int receiver = 2; // Signal Pin of IR receiver to Arduino Digital Pin 11
-int power_status = 0;
+int receiver = 13; // Signal Pin of IR receiver to Arduino Digital Pin 11
+//int power_on;
+int fan_status,power_on;
 
 IRrecv irrecv(receiver);           // create instance of 'irrecv'
 decode_results results; // create instance of 'decode_results'
@@ -43,7 +44,8 @@ void setup()
   Serial.begin(9600);
   Serial.println("IR Receiver Button Decode");
 
-  int power_status = 0;
+  power_on = 1;
+  fan_status = 0;
 
   pinMode(DisObstaclePin, INPUT);
   myservo.attach(9);
@@ -58,20 +60,24 @@ void setup()
   delay(100);
 
   irrecv.enableIRIn(); // Start the receiver
-  irrecv.blink13(true);
 
 }
 
 
 void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
 {
+
   Serial.println("Begin loop");
-  delay(500);
+  delay(1000);
   if (irrecv.decode(&results)) // have we received an IR signal?
   {
-    Serial.println("wada");
+    Serial.print("Start reciving");
     translateIR();
-  } else {
+    irrecv.resume(); // receive the next value
+  }
+
+  //delay(2000); 
+  if (power_on == 1) {
     Serial.println("POWER ON");
     int distanceR = 0;
     int distanceL =  0;
@@ -108,11 +114,17 @@ void loop()   /*----( LOOP: RUNS CONSTANTLY )----*/
     delay(50);
     DisObstacle = digitalRead(DisObstaclePin);
     delay(50);
-    
-   }
-   irrecv.resume(); // receive the next value
-   delay(500);
+  }
 
+  if (fan_status == 1) {
+    startFan();
+    delay(50);
+  } else {
+    stopFan();
+    delay(50);
+  }
+  
+ // irrecv.resume(); // receive the next value
 }/* --(end main loop )-- */
 
 
@@ -123,28 +135,19 @@ void translateIR() // takes action based on IR code received
 {
   switch (results.value)
   {
-
     case 0xFF30CF: Serial.println("Movement-ON- 1");
-      power_status = 1;
-      delay(100);
+      //power_on = 1;
       break;
     case 0xFF18E7: Serial.println("Movement-OFF -2");
-      power_status = 0;
-      //moveStop();
-      delay(100);
+      //power_on = 0;
       break;
     case 0xFF10EF: Serial.println("Fan-on-3");
-      startFan();
-      ///delay(2000);
+      fan_status = 1 ;
       break;
     case 0xFF38C7: Serial.println("Fan-off-4");
-      stopFan();
-      //delay(2000);
+      fan_status = 0;
       break;
     default:
-      power_status = 0;
-      stopFan();
-      delay(100);
       Serial.println(" other button   ");
   }
   delay(500); // Do not get immediate repeat
@@ -190,11 +193,11 @@ void moveStop() {
 }
 
 void moveForward() {
-
   if (!goesForward)
   {
+    motor3.setSpeed(30);
+    motor3.run(FORWARD);
     goesForward = true;
-    motor1.run(200);
     motor1.run(FORWARD);
     motor2.run(FORWARD);
 
@@ -216,6 +219,7 @@ void moveBackward() {
   delay(500);
 }
 
+
 void turnRight() {
   motor1.run(FORWARD);
   motor2.run(BACKWARD);
@@ -234,25 +238,14 @@ void turnLeft() {
 
 
 void startFan() {
-  fanrun = true;
-  while (fanrun) {
-    motor3.setSpeed(10);
-    motor3.run(FORWARD);
-    Serial.println("FAN  start  ");
-    irrecv.resume();
-    delay(1000);
-    if (irrecv.decode(&results)) // have we received an IR signal?
-    {
-      Serial.println("wada");
-      translateIR();
-      delay(500);
-    }
-  }
+  motor3.setSpeed(30);
+  motor3.run(FORWARD);
+  Serial.println("FAN start  ");
+  delay(100);
 }
 
 void stopFan() {
-  fanrun = false;
-  motor3.run(RELEASE);
+  motor3.setSpeed(RELEASE);
   Serial.println("FAN  stop  ");
-  delay(500);
+  delay(100);
 }
